@@ -1,54 +1,39 @@
 import streamlit as st
-from openai import OpenAI
 
 st.set_page_config(page_title="BCA FAQ Chatbot")
 
-st.title("🎓 BCA Student FAQ Chatbot")
-
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-
-SYSTEM_PROMPT = """
-You are a BCA Student FAQ Assistant.
-
-You only answer questions related to:
-- BCA
-- Programming
-- Internships
-- Career guidance
-- Software development
-- Computer science education
-
-If a question is outside these topics, politely respond:
-'Sorry, I can only answer BCA and technology-related questions.'
-"""
+st.title("BCA Student FAQ Chatbot")
 
 if "messages" not in st.session_state:
-    st.session_state.messages = [
-        {"role": "system", "content": SYSTEM_PROMPT}
-    ]
+    st.session_state.messages = []
 
-for message in st.session_state.messages[1:]:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+faq = {
+    "what is bca": "BCA stands for Bachelor of Computer Applications.",
+    "best language for bca": "Python, Java, JavaScript and SQL are excellent choices.",
+    "career after bca": "You can become a Software Developer, Web Developer, Data Analyst, QA Engineer, or pursue MCA.",
+    "internship tips": "Build projects, maintain GitHub repositories, and improve your coding skills."
+}
 
-prompt = st.chat_input("Ask your question")
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.write(msg["content"])
 
-if prompt:
+user_input = st.chat_input("Ask a question")
+
+if user_input:
     st.session_state.messages.append(
-        {"role": "user", "content": prompt}
+        {"role": "user", "content": user_input}
     )
 
-    memory = st.session_state.messages[-11:]
+    answer = "Sorry, I can only answer BCA-related questions."
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=memory
-    )
-
-    reply = response.choices[0].message.content
+    for key in faq:
+        if key in user_input.lower():
+            answer = faq[key]
+            break
 
     st.session_state.messages.append(
-        {"role": "assistant", "content": reply}
+        {"role": "assistant", "content": answer}
     )
 
     st.rerun()
