@@ -1,33 +1,54 @@
 import streamlit as st
+from openai import OpenAI
 
-st.title("BCA Student FAQ Chatbot")
+st.set_page_config(page_title="BCA FAQ Chatbot")
 
-st.write("Ask me questions about BCA, programming, internships, and career options.")
+st.title("🎓 BCA Student FAQ Chatbot")
+
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
+SYSTEM_PROMPT = """
+You are a BCA Student FAQ Assistant.
+
+You only answer questions related to:
+- BCA
+- Programming
+- Internships
+- Career guidance
+- Software development
+- Computer science education
+
+If a question is outside these topics, politely respond:
+'Sorry, I can only answer BCA and technology-related questions.'
+"""
 
 if "messages" not in st.session_state:
-    st.session_state.messages = []
+    st.session_state.messages = [
+        {"role": "system", "content": SYSTEM_PROMPT}
+    ]
 
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.write(msg["content"])
+for message in st.session_state.messages[1:]:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-user_input = st.chat_input("Ask a question...")
+prompt = st.chat_input("Ask your question")
 
-if user_input:
+if prompt:
     st.session_state.messages.append(
-        {"role": "user", "content": user_input}
+        {"role": "user", "content": prompt}
     )
 
-    if len(st.session_state.messages) > 10:
-        st.session_state.messages = st.session_state.messages[-10:]
+    memory = st.session_state.messages[-11:]
 
-    response = (
-        "This is a placeholder response. "
-        "In the next step we will connect OpenAI API."
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=memory
     )
 
+    reply = response.choices[0].message.content
+
     st.session_state.messages.append(
-        {"role": "assistant", "content": response}
+        {"role": "assistant", "content": reply}
     )
 
     st.rerun()
