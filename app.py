@@ -1,6 +1,6 @@
 import streamlit as st
 
-st.title("🎓 BCA Student FAQ Chatbot")
+st.title("BCA Student FAQ Chatbot")
 
 st.write("Ask me questions about BCA, programming, internships, and career options.")
 
